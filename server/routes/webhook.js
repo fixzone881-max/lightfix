@@ -17,15 +17,20 @@ router.get('/', (req, res) => {
 
 router.post('/', verifyMetaSignature, async (req, res) => {
   res.sendStatus(200);
+  console.log('[webhook] RAW PAYLOAD:', JSON.stringify(req.body));
   try {
     for (const entry of req.body.entry || []) {
       const igBusinessId = entry.id;
-      const { data: igAccount } = await supabase.from('ig_accounts').select('*').eq('ig_business_id', String(igBusinessId)).maybeSingle();
-      if (!igAccount) continue;
+      console.log('[webhook] looking up account for ig_business_id =', igBusinessId);
+      const { data: igAccount, error: lookupErr } = await supabase.from('ig_accounts').select('*').eq('ig_business_id', String(igBusinessId)).maybeSingle();
+      if (lookupErr) console.log('[webhook] lookup error:', lookupErr.message);
+      if (!igAccount) { console.log('[webhook] NO MATCHING ACCOUNT FOUND for', igBusinessId); continue; }
+      console.log('[webhook] matched account:', igAccount.username);
       for (const change of entry.changes || []) {
         if (change.field === 'comments') {
           const value = change.value;
           const result = await handleIncomingComment({ igAccount, commentId: value.id, senderIgId: value.from?.id, senderUsername: value.from?.username, text: value.text });
+          console.log('[webhook] comment handling result:', JSON.stringify(result));
           if (result.moderated) await setCommentHidden(value.id, igAccount.access_token, true);
         }
       }
