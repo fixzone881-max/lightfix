@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adhesive Estimator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --panel: #161616;
+    --border: #2a2a2a;
+    --accent: #f0a500;
+    --accent2: #e05f00;
+    --text: #e8e8e0;
+    --muted: #888;
+    --success: #4caf7d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image: 
+      radial-gradient(ellipse at 20% 20%, rgba(240,165,0,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(224,95,0,0.05) 0%, transparent 50%);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  header .label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    letter-spacing: 4px;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 700px) {
+    .container { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  input, select {
+    width: 100%;
+    background: #1e1e1e;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    padding: 10px 14px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(240,165,0,0.12);
+  }
+
+  select option { background: #1e1e1e; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    padding: 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  button:hover { opacity: 0.9; transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+
+  /* Results card spans full width */
+  .results-card {
+    grid-column: 1 / -1;
+    animation-delay: 0.2s;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .result-item {
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+
+  .result-item.highlight {
+    border-color: var(--accent);
+    background: rgba(240,165,0,0.06);
+  }
+
+  .result-item .val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+    transition: color 0.3s;
+  }
+
+  .result-item .unit {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .result-item .desc {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .notes {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(76,175,125,0.08);
+    border: 1px solid rgba(76,175,125,0.25);
+    border-radius: 2px;
+    font-size: 12px;
+    color: var(--success);
+    letter-spacing: 0.5px;
+    line-height: 1.7;
+    display: none;
+  }
+
+  .notes.show { display: block; }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  .adhesive-type-info {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+    min-height: 30px;
+  }
+
+  .tag {
+    display: inline-block;
+    background: rgba(240,165,0,0.12);
+    border: 1px solid rgba(240,165,0,0.25);
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Industrial Grade</div>
+  <h1>Adhesive Estimator</h1>
+  <p>Calculate adhesive quantity, coverage &amp; cost for any bonding project</p>
+</header>
+
+<div class="container">
+
+  <!-- Surface Card -->
+  <div class="card">
+    <div class="card-title">Surface Dimensions</div>
+
+    <div class="row">
+      <div class="field">
+        <label>Length</label>
+        <input type="number" id="length" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label>Width</label>
+        <input type="number" id="width" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Unit</label>
+      <select id="unit">
+        <option value="ft">Feet (ft)</option>
+        <option value="m">Meters (m)</option>
+        <option value="in">Inches (in)</option>
+        <option value="cm">Centimeters (cm)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Number of Surfaces</label>
+      <input type="number" id="surfaces" min="1" value="1" step="1">
+    </div>
+
+    <div class="field">
+      <label>Waste / Overlap Factor (%)</label>
+      <input type="number" id="waste" min="0" max="100" value="10" step="1">
+    </div>
+  </div>
+
+  <!-- Adhesive Card -->
+  <div class="card">
+    <div class="card-title">Adhesive Settings</div>
+
+    <div class="field">
+      <label>Adhesive Type</label>
+      <select id="adhesiveType" onchange="updateAdhesiveInfo()">
+        <option value="contact">Contact Cement</option>
+        <option value="epoxy">Epoxy</option>
+        <option value="pva">PVA / Wood Glue</option>
+        <option value="hotmelt">Hot Melt</option>
+        <option value="silicone">Silicone Sealant</option>
+        <option value="construction">Construction Adhesive</option>
+        <option value="spray">Spray Adhesive</option>
+        <option value="custom">Custom</option>
+      </select>
+      <div class="adhesive-type-info" id="adhesiveInfo"></div>
+    </div>
+
+    <div class="field">
+      <label>Coverage Rate (ft² per oz)</label>
+      <input type="number" id="coverageRate" min="0.1" step="0.1" value="12">
+    </div>
+
+    <div class="field">
+      <label>Application</label>
+      <select id="appThickness">
+        <option value="1">Light (single thin coat)</option>
+        <option value="1.5" selected>Standard (normal application)</option>
+        <option value="2">Heavy (double coat / thick bond)</option>
+        <option value="2.5">Extra Heavy (structural bond)</option>
+      </select>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <label>Price per Unit (₹ / $)</label>
+      <input type="number" id="price" min="0" step="0.01" placeholder="0.00">
+    </div>
+
+    <div class="field">
+      <label>Container Size (oz)</label>
+      <input type="number" id="containerSize" min="1" step="1" value="16">
+    </div>
+
+    <button onclick="calculate()">CALCULATE</button>
+  </div>
+
+  <!-- Results Card -->
+  <div class="card results-card">
+    <div class="card-title">Estimation Results</div>
+    <div class="results-grid">
+      <div class="result-item highlight">
+        <div class="val" id="res-area">—</div>
+        <div class="unit">Total Area</div>
+        <div class="desc">Square Feet</div>
+      </div>
+      <div class="result-item">
+        <div class="val" id="res-oz">—</div>
+        <div class="unit">Adhesive Required</div>
+        <div class="desc">Ounces (oz)</div>
+      </div>
+      <div class="result-item">
+        <div class="val" id="res-containers">—</div>
+        <div class="unit">Containers Needed</div>
+        <div class="desc">Units to Buy</div>
+      </div>
+      <div class="result-item">
+        <div class="val" id="res-cost">—</div>
+        <div class="unit">Estimated Cost</div>
+        <div class="desc">Total Price</div>
+      </div>
+      <div class="result-item">
+        <div class="val" id="res-leftover">—</div>
+        <div class="unit">Leftover</div>
+        <div class="desc">Ounces Unused</div>
+      </div>
+    </div>
+    <div class="notes" id="notes"></div>
+  </div>
+
+</div>
+
+<script>
+const adhesiveData = {
+  contact:      { coverage: 12,  info: "Bonds rubber, leather, laminates. Apply to both surfaces, allow to tack.", tags: ["DUAL COAT", "FAST TACK"] },
+  epoxy:        { coverage: 25,  info: "Two-part structural adhesive. Excellent for metal, glass, ceramics.", tags: ["2-PART", "STRUCTURAL"] },
+  pva:          { coverage: 20,  info: "Water-based wood glue. Ideal for porous surfaces. Non-waterproof.", tags: ["POROUS", "WOOD"] },
+  hotmelt:      { coverage: 8,   info: "Fast-setting thermoplastic. Great for crafts, packaging, light bonding.", tags: ["FAST SET", "THERMAL"] },
+  silicone:     { coverage: 6,   info: "Flexible, waterproof sealant. Ideal for gaps, joints, bathrooms.", tags: ["WATERPROOF", "FLEXIBLE"] },
+  construction: { coverage: 10,  info: "Heavy-duty bonding for building materials, concrete, wood, drywall.", tags: ["HEAVY DUTY", "STRUCTURAL"] },
+  spray:        { coverage: 15,  info: "Aerosol adhesive for fabrics, foam, lightweight materials.", tags: ["AEROSOL", "LIGHT BOND"] },
+  custom:       { coverage: null, info: "Enter your own coverage rate in the field above.", tags: ["CUSTOM"] },
+};
+
+function updateAdhesiveInfo() {
+  const type = document.getElementById('adhesiveType').value;
+  const data = adhesiveData[type];
+  const infoEl = document.getElementById('adhesiveInfo');
+  const rateEl = document.getElementById('coverageRate');
+
+  if (data.coverage !== null) rateEl.value = data.coverage;
+
+  const tags = data.tags.map(t => `<span class="tag">${t}</span>`).join('');
+  infoEl.innerHTML = tags + `<br><span style="margin-top:6px;display:block">${data.info}</span>`;
+}
+
+function toSqFeet(val, unit) {
+  switch(unit) {
+    case 'm':  return val * 10.7639;
+    case 'in': return val / 144;
+    case 'cm': return val / 929.03;
+    default:   return val;
+  }
+}
+
+function calculate() {
+  const length = parseFloat(document.getElementById('length').value) || 0;
+  const width  = parseFloat(document.getElementById('width').value)  || 0;
+  const unit   = document.getElementById('unit').value;
+  const surfaces = parseInt(document.getElementById('surfaces').value) || 1;
+  const waste    = (parseFloat(document.getElementById('waste').value) || 0) / 100;
+  const coverage = parseFloat(document.getElementById('coverageRate').value) || 1;
+  const thick    = parseFloat(document.getElementById('appThickness').value) || 1;
+  const price    = parseFloat(document.getElementById('price').value) || 0;
+  const contSize = parseFloat(document.getElementById('containerSize').value) || 16;
+
+  const areaSF   = toSqFeet(length * width, unit) * surfaces;
+  const areaAdj  = areaSF * (1 + waste);
+  const ozNeeded = (areaAdj / coverage) * thick;
+  const containers = Math.ceil(ozNeeded / contSize);
+  const totalCost  = containers * price;
+  const leftover   = (containers * contSize) - ozNeeded;
+
+  const fmt = (n, dec=1) => n >= 1000 ? (n/1000).toFixed(1)+'K' : n.toFixed(dec);
+
+  document.getElementById('res-area').textContent       = fmt(areaSF, 1);
+  document.getElementById('res-oz').textContent         = fmt(ozNeeded, 1);
+  document.getElementById('res-containers').textContent = containers;
+  document.getElementById('res-cost').textContent       = price > 0 ? '₹' + totalCost.toFixed(2) : '—';
+  document.getElementById('res-leftover').textContent   = fmt(leftover, 1);
+
+  const notes = document.getElementById('notes');
+  let msg = '';
+  if (ozNeeded > 0) {
+    msg += `✔ Total bonding area: <strong>${areaSF.toFixed(2)} ft²</strong> (${(areaSF * surfaces).toFixed(2)} ft² across ${surfaces} surface(s)).\n`;
+    msg += `✔ With ${waste*100}% waste factor: <strong>${areaAdj.toFixed(2)} ft²</strong> effective area.\n`;
+    msg += `✔ You need <strong>${ozNeeded.toFixed(2)} oz</strong> of adhesive — that's <strong>${containers} container(s)</strong> of ${contSize} oz each.\n`;
+    if (leftover > 0.5) msg += `✔ Approx. <strong>${leftover.toFixed(1)} oz</strong> will remain after the job.`;
+  }
+  notes.innerHTML = msg.replace(/\n/g, '<br>');
+  notes.classList.toggle('show', ozNeeded > 0);
+}
+
+// Init info on load
+updateAdhesiveInfo();
+</script>
+
+</body>
+</html>
