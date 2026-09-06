@@ -1,94 +1,61 @@
 const axios = require('axios');
 const config = require('../config');
 
-const GRAPH = `https://graph.facebook.com/${config.meta.graphVersion}`;
+const GRAPH = `https://graph.instagram.com/${config.meta.graphVersion}`;
 
-/**
- * Exchange the OAuth "code" from the Facebook Login dialog for a short-lived
- * user access token, then upgrade it to a long-lived one.
- */
 async function exchangeCodeForToken(code) {
-  const { data } = await axios.get(`${GRAPH}/oauth/access_token`, {
-    params: {
-      client_id: config.meta.appId,
-      client_secret: config.meta.appSecret,
-      redirect_uri: config.meta.redirectUri,
-      code,
-    },
-  });
-  return data.access_token; // short-lived
+  const params = new URLSearchParams();
+  params.append('client_id', config.meta.appId);
+  params.append('client_secret', config.meta.appSecret);
+  params.append('grant_type', 'authorization_code');
+  params.append('redirect_uri', config.meta.redirectUri);
+  params.append('code', code);
+  const { data } = await axios.post('https://api.instagram.com/oauth/access_token', params);
+  return data;
 }
 
 async function getLongLivedToken(shortLivedToken) {
-  const { data } = await axios.get(`${GRAPH}/oauth/access_token`, {
-    params: {
-      grant_type: 'fb_exchange_token',
-      client_id: config.meta.appId,
-      client_secret: config.meta.appSecret,
-      fb_exchange_token: shortLivedToken,
-    },
+  const { data } = await axios.get('https://graph.instagram.com/access_token', {
+    params: { grant_type: 'ig_exchange_token', client_secret: config.meta.appSecret, access_token: shortLivedToken },
   });
-  return data.access_token; // ~60 day token
+  return data.access_token;
 }
 
-/** List the Facebook Pages this user manages, with their linked IG business account. */
-async function listPagesWithInstagram(userAccessToken) {
-  const { data } = await axios.get(`${GRAPH}/me/accounts`, {
-    params: {
-      access_token: userAccessToken,
-      fields: 'id,name,access_token,instagram_business_account{id,username}',
-    },
+async function getMyProfile(accessToken) {
+  const { data } = await axios.get(`${GRAPH}/me`, {
+    params: { fields: 'user_id,username,name', access_token: accessToken },
   });
-  return data.data || [];
+  return data;
 }
 
-/** Send a DM to a user who has messaged/commented recently (24h messaging window applies). */
-async function sendDirectMessage(igBusinessId, pageAccessToken, recipientIgId, text) {
-  const url = `${GRAPH}/${igBusinessId}/messages`;
+async function sendDirectMessage(igBusinessId, accessToken, recipientIgId, text) {
   const { data } = await axios.post(
-    url,
+    `${GRAPH}/${igBusinessId}/messages`,
     { recipient: { id: recipientIgId }, message: { text } },
-    { params: { access_token: pageAccessToken } }
+    { params: { access_token: accessToken } }
   );
   return data;
 }
 
-/** Reply publicly to a comment. */
-async function replyToComment(commentId, pageAccessToken, message) {
-  const url = `${GRAPH}/${commentId}/replies`;
-  const { data } = await axios.post(url, null, {
-    params: { access_token: pageAccessToken, message },
+async function replyToComment(commentId, accessToken, message) {
+  const { data } = await axios.post(`${GRAPH}/${commentId}/replies`, null, {
+    params: { access_token: accessToken, message },
   });
   return data;
 }
 
-/** Hide (or unhide) a comment — used by the moderation engine. */
-async function setCommentHidden(commentId, pageAccessToken, hide = true) {
-  const url = `${GRAPH}/${commentId}`;
-  const { data } = await axios.post(url, null, {
-    params: { access_token: pageAccessToken, is_hidden: hide },
+async function setCommentHidden(commentId, accessToken, hide = true) {
+  const { data } = await axios.post(`${GRAPH}/${commentId}`, null, {
+    params: { access_token: accessToken, is_hidden: hide },
   });
   return data;
 }
 
-/** Subscribe a Page to the webhook fields we care about. */
-async function subscribePageWebhooks(pageId, pageAccessToken) {
-  const url = `${GRAPH}/${pageId}/subscribed_apps`;
-  const { data } = await axios.post(url, null, {
-    params: {
-      access_token: pageAccessToken,
-      subscribed_fields: 'feed,messages,comments,mentions,message_reactions',
-    },
+async function subscribeAccountWebhooks(igBusinessId, accessToken) {
+  const { data } = await axios.post(`${GRAPH}/${igBusinessId}/subscribed_apps`, null, {
+    params: { access_token: accessToken, subscribed_fields: 'messages,comments,mentions' },
   });
   return data;
 }
 
-module.exports = {
-  exchangeCodeForToken,
-  getLongLivedToken,
-  listPagesWithInstagram,
-  sendDirectMessage,
-  replyToComment,
-  setCommentHidden,
-  subscribePageWebhooks,
-};
+module.exports = { exchangeCodeForToken, getLongLivedToken, getMyProfile, sendDirectMessage, replyToComment, setCommentHidden, subscribeAccountWebhooks };
