@@ -44,4 +44,21 @@ router.get('/instagram/start', (req, res) => {
 
 router.get('/instagram/callback', async (req, res) => {
   const { code, state: appUserId } = req.query;
-  if (!code) return
+  if (!code) return res.status(400).send('Missing code');
+  try {
+    const shortLived = await exchangeCodeForToken(code);
+    const longToken = await getLongLivedToken(shortLived.access_token);
+    const profile = await getMyProfile(longToken);
+    await subscribeAccountWebhooks(profile.user_id, longToken);
+    await supabase.from('ig_accounts').upsert(
+      { app_user_id: appUserId, ig_business_id: String(profile.user_id), fb_page_id: null, username: profile.username, access_token: longToken },
+      { onConflict: 'app_user_id,ig_business_id' }
+    );
+    res.redirect(`${config.appUrl}/dashboard.html?connected=1`);
+  } catch (err) {
+    console.error('[auth] instagram callback failed:', err.response?.data || err.message);
+    res.redirect(`${config.appUrl}/dashboard.html?connect_error=1`);
+  }
+});
+
+module.exports = router;
