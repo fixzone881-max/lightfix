@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="brand">Signal</div>
+    <a href="/dashboard.html" class="active">Overview</a>
+    <a href="/automations.html">Automations</a>
+    <a href="/comments.html">Comments</a>
+    <a href="/deals.html">Brand deals</a>
+    <a href="/products.html">Products</a>
+    <div class="spacer"></div>
+    <span class="signout" id="signOut">Sign out</span>
+  </nav>
+  <main class="main">
+    <header>
+      <div>
+        <h1>Overview</h1>
+        <p id="welcome"></p>
+      </div>
+      <a class="btn" href="/api/auth/instagram/start">Connect Instagram</a>
+    </header>
+
+    <div class="stat-row">
+      <div class="stat"><div class="value" id="statAccounts">–</div><div class="label">Connected accounts</div></div>
+      <div class="stat"><div class="value" id="statAutomations">–</div><div class="label">Active automations</div></div>
+      <div class="stat"><div class="value" id="statSales">–</div><div class="label">Product sales</div></div>
+      <div class="stat"><div class="value" id="statRevenue">–</div><div class="label">Revenue</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Connected accounts</h2>
+      <div id="accountsList"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent activity</h2>
+      <div id="recentActivity"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/api.js"></script>
+<script>
+(async () => {
+  const me = await requireLogin();
+  document.getElementById('welcome').textContent = me.full_name ? `Welcome back, ${me.full_name}` : me.email;
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('connect_error')) {
+    document.getElementById('welcome').textContent += ' — Instagram connection failed, please try again.';
+  }
+
+  const [accounts, automations, sales, events] = await Promise.all([
+    api.get('/automations/accounts'),
+    api.get('/automations'),
+    api.get('/products/sales/summary'),
+    api.get('/comments'),
+  ]);
+
+  document.getElementById('statAccounts').textContent = accounts.length;
+  document.getElementById('statAutomations').textContent = automations.filter(a => a.active).length;
+  document.getElementById('statSales').textContent = sales.totalSales;
+  document.getElementById('statRevenue').textContent = fmtMoney(sales.totalRevenueCents);
+
+  const accountsList = document.getElementById('accountsList');
+  accountsList.innerHTML = accounts.length
+    ? accounts.map(a => `<p>@${escapeHtml(a.username || a.ig_business_id)} — connected ${fmtDate(a.connected_at)}</p>`).join('')
+    : '<div class="empty-state">No Instagram accounts connected yet. Click "Connect Instagram" above to get started.</div>';
+
+  const recent = document.getElementById('recentActivity');
+  recent.innerHTML = events.length
+    ? `<table><tr><th>When</th><th>Type</th><th>From</th><th>Content</th><th>Result</th></tr>` +
+      events.slice(0, 10).map(e => `<tr>
+        <td>${fmtDate(e.created_at)}</td>
+        <td>${e.event_type}</td>
+        <td>@${escapeHtml(e.sender_username || e.sender_ig_id || '')}</td>
+        <td>${escapeHtml((e.content || '').slice(0, 60))}</td>
+        <td>${e.moderation_action ? `<span class="badge ${e.moderation_action}">${e.moderation_action}</span>` : (e.matched ? '<span class="badge matched">matched</span>' : '—')}</td>
+      </tr>`).join('') + `</table>`
+    : '<div class="empty-state">No activity yet.</div>';
+})();
+
+document.getElementById('signOut').addEventListener('click', async () => {
+  await api.post('/auth/logout');
+  window.location.href = '/login.html';
+});
+</script>
+</body>
+</html>

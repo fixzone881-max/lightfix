@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brand deals</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="brand">Signal</div>
+    <a href="/dashboard.html">Overview</a>
+    <a href="/automations.html">Automations</a>
+    <a href="/comments.html">Comments</a>
+    <a href="/deals.html" class="active">Brand deals</a>
+    <a href="/products.html">Products</a>
+    <div class="spacer"></div>
+    <span class="signout" id="signOut">Sign out</span>
+  </nav>
+  <main class="main">
+    <header>
+      <div>
+        <h1>Brand deals</h1>
+        <p>DMs that mention a partnership, collab, or sponsorship — so they never get buried.</p>
+      </div>
+    </header>
+    <div class="panel">
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/api.js"></script>
+<script>
+(async () => {
+  await requireLogin();
+  const events = await api.get('/deals');
+  const list = document.getElementById('list');
+  list.innerHTML = events.length
+    ? `<table><tr><th>When</th><th>From</th><th>Message</th></tr>` +
+      events.map(e => `<tr>
+        <td>${fmtDate(e.created_at)}</td>
+        <td>@${escapeHtml(e.sender_username || e.sender_ig_id || '')}</td>
+        <td>${escapeHtml(e.content || '')} <span class="badge deal">brand deal</span></td>
+      </tr>`).join('') + `</table>`
+    : '<div class="empty-state">No brand-deal DMs detected yet.</div>';
+})();
+
+document.getElementById('signOut').addEventListener('click', async () => {
+  await api.post('/auth/logout');
+  window.location.href = '/login.html';
+});
+</script>
+</body>
+</html>

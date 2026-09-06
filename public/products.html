@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Products</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="brand">Signal</div>
+    <a href="/dashboard.html">Overview</a>
+    <a href="/automations.html">Automations</a>
+    <a href="/comments.html">Comments</a>
+    <a href="/deals.html">Brand deals</a>
+    <a href="/products.html" class="active">Products</a>
+    <div class="spacer"></div>
+    <span class="signout" id="signOut">Sign out</span>
+  </nav>
+  <main class="main">
+    <header><h1>Digital products</h1></header>
+
+    <div class="stat-row">
+      <div class="stat"><div class="value" id="statSales">–</div><div class="label">Total sales</div></div>
+      <div class="stat"><div class="value" id="statRevenue">–</div><div class="label">Total revenue</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>New product</h2>
+      <form id="newProduct">
+        <label>Instagram account</label>
+        <select id="accountId" required></select>
+        <label>Title</label>
+        <input type="text" id="title" required>
+        <label>Description</label>
+        <textarea id="description"></textarea>
+        <label>Price (USD)</label>
+        <input type="number" id="price" step="0.01" min="0" required>
+        <label>File URL (a link to the file buyers receive)</label>
+        <input type="text" id="fileUrl" placeholder="https://..." required>
+        <button type="submit">Add product</button>
+        <div class="error-msg" id="err"></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Your products</h2>
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/api.js"></script>
+<script>
+(async () => {
+  await requireLogin();
+
+  const accounts = await api.get('/automations/accounts');
+  document.getElementById('accountId').innerHTML = accounts.length
+    ? accounts.map(a => `<option value="${a.id}">@${escapeHtml(a.username || a.ig_business_id)}</option>`).join('')
+    : '<option value="">Connect an Instagram account first</option>';
+
+  const summary = await api.get('/products/sales/summary');
+  document.getElementById('statSales').textContent = summary.totalSales;
+  document.getElementById('statRevenue').textContent = fmtMoney(summary.totalRevenueCents);
+
+  const products = await api.get('/products');
+  document.getElementById('list').innerHTML = products.length
+    ? `<table><tr><th>Title</th><th>Price</th><th>File</th></tr>` +
+      products.map(p => `<tr>
+        <td>${escapeHtml(p.title)}</td>
+        <td>${fmtMoney(p.price_cents, p.currency)}</td>
+        <td><a href="${escapeHtml(p.file_url)}" target="_blank" rel="noopener">link</a></td>
+      </tr>`).join('') + `</table>`
+    : '<div class="empty-state">No products yet — add one above, then reference it in a DM automation.</div>';
+})();
+
+document.getElementById('newProduct').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('err').textContent = '';
+  try {
+    await api.post('/products', {
+      ig_account_id: document.getElementById('accountId').value,
+      title: document.getElementById('title').value,
+      description: document.getElementById('description').value,
+      price_cents: Math.round(parseFloat(document.getElementById('price').value) * 100),
+      file_url: document.getElementById('fileUrl').value,
+    });
+    window.location.reload();
+  } catch (err) {
+    document.getElementById('err').textContent = err.message;
+  }
+});
+
+document.getElementById('signOut').addEventListener('click', async () => {
+  await api.post('/auth/logout');
+  window.location.href = '/login.html';
+});
+</script>
+</body>
+</html>

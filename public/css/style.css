@@ -1,0 +1,157 @@
+/* ---------------------------------------------------------------------
+   Design tokens
+   Subject: a messaging/automation console — the personality comes from
+   signal states (queued / sending / delivered) rather than decoration.
+   Ink background, one warm "live signal" amber, one cool "info" periwinkle.
+--------------------------------------------------------------------- */
+:root {
+  --ink: #12141A;
+  --surface: #1A1D25;
+  --surface-raised: #21252F;
+  --line: #2C303B;
+  --text: #E7E8EC;
+  --text-dim: #9297A6;
+  --signal: #F0A93B;      /* live / pending — warm amber */
+  --signal-quiet: #7E6738;
+  --info: #7C8CF8;        /* links, secondary actions — periwinkle */
+  --good: #4FB286;
+  --bad: #E06A6A;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0 0 0.4em; }
+h1 { font-size: 28px; }
+h2 { font-size: 20px; }
+h3 { font-size: 16px; color: var(--text-dim); font-weight: 500; }
+p { color: var(--text-dim); max-width: 62ch; }
+a { color: var(--info); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- Auth pages (centered card) --- */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 32px;
+}
+.auth-card .brand { font-family: var(--font-display); font-size: 22px; margin-bottom: 4px; }
+.auth-card .tag { color: var(--text-dim); font-size: 13px; margin-bottom: 24px; }
+
+/* --- App shell: sidebar + main --- */
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar .brand { font-family: var(--font-display); font-size: 19px; margin-bottom: 20px; padding: 0 8px; }
+.sidebar a {
+  color: var(--text-dim);
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+.sidebar a:hover { background: var(--surface); text-decoration: none; color: var(--text); }
+.sidebar a.active { background: var(--surface-raised); color: var(--text); }
+.sidebar .spacer { flex: 1; }
+.sidebar .signout { color: var(--bad); font-size: 13px; cursor: pointer; }
+
+.main { flex: 1; padding: 32px 40px; max-width: 1080px; }
+.main header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; }
+
+/* --- Cards & stats (varied, not uniform-identical) --- */
+.stat-row { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  min-width: 150px;
+}
+.stat .value { font-family: var(--font-display); font-size: 26px; }
+.stat .label { color: var(--text-dim); font-size: 12.5px; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* --- Forms --- */
+label { display: block; font-size: 13px; color: var(--text-dim); margin: 14px 0 6px; }
+input[type=text], input[type=email], input[type=password], input[type=number], textarea, select {
+  width: 100%;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+}
+textarea { min-height: 80px; resize: vertical; }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--info); outline-offset: 1px; }
+
+button, .btn {
+  display: inline-block;
+  background: var(--signal);
+  color: #1A1200;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 16px;
+}
+button.secondary, .btn.secondary { background: transparent; border: 1px solid var(--line); color: var(--text); }
+button.danger { background: var(--bad); color: #200; }
+button:disabled { opacity: 0.5; cursor: default; }
+
+/* --- Tables / lists --- */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+th { color: var(--text-dim); font-weight: 500; font-size: 12px; text-transform: none; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  border: 1px solid var(--line);
+}
+.badge.hidden_hate, .badge.hidden_spam, .badge.hidden_competitor { color: var(--bad); border-color: var(--bad); }
+.badge.matched { color: var(--good); border-color: var(--good); }
+.badge.deal { color: var(--signal); border-color: var(--signal); }
+
+.empty-state { color: var(--text-dim); padding: 40px 0; text-align: center; }
+.error-msg { color: var(--bad); font-size: 13px; margin-top: 10px; }

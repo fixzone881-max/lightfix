@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automations</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="brand">Signal</div>
+    <a href="/dashboard.html">Overview</a>
+    <a href="/automations.html" class="active">Automations</a>
+    <a href="/comments.html">Comments</a>
+    <a href="/deals.html">Brand deals</a>
+    <a href="/products.html">Products</a>
+    <div class="spacer"></div>
+    <span class="signout" id="signOut">Sign out</span>
+  </nav>
+  <main class="main">
+    <header><h1>Automations</h1></header>
+
+    <div class="panel">
+      <h2>New automation</h2>
+      <form id="newAutomation">
+        <label>Instagram account</label>
+        <select id="accountId" required></select>
+
+        <label>Name</label>
+        <input type="text" id="name" placeholder="e.g. Send link when someone comments LINK" required>
+
+        <label>Trigger</label>
+        <select id="triggerType">
+          <option value="comment_keyword">Someone comments (keyword match)</option>
+          <option value="dm_keyword">Someone sends a DM (keyword match)</option>
+          <option value="story_reply">Someone replies to a story</option>
+          <option value="post_share">Someone shares this post to their DMs</option>
+        </select>
+
+        <label>Keywords (comma separated, leave blank to match anything)</label>
+        <input type="text" id="keywords" placeholder="link, price, guide">
+
+        <label>Public reply to the comment (optional)</label>
+        <input type="text" id="replyPublic" placeholder="Sent you a DM! 🎉">
+
+        <label>DM message to send</label>
+        <textarea id="dmMessage" placeholder="Here's the link you asked for 👇 https://..." required></textarea>
+
+        <button type="submit">Create automation</button>
+        <div class="error-msg" id="err"></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Your automations</h2>
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/api.js"></script>
+<script>
+let accounts = [];
+
+async function loadAccounts() {
+  accounts = await api.get('/automations/accounts');
+  const select = document.getElementById('accountId');
+  select.innerHTML = accounts.length
+    ? accounts.map(a => `<option value="${a.id}">@${escapeHtml(a.username || a.ig_business_id)}</option>`).join('')
+    : '<option value="">Connect an Instagram account first</option>';
+}
+
+async function loadAutomations() {
+  const list = await api.get('/automations');
+  const el = document.getElementById('list');
+  el.innerHTML = list.length
+    ? `<table><tr><th>Name</th><th>Trigger</th><th>Keywords</th><th>Status</th><th></th></tr>` +
+      list.map(a => `<tr>
+        <td>${escapeHtml(a.name)}</td>
+        <td>${a.trigger_type}</td>
+        <td>${(a.keywords || []).join(', ') || '<em>any</em>'}</td>
+        <td>${a.active ? '<span class="badge matched">active</span>' : '<span class="badge">paused</span>'}</td>
+        <td><button class="secondary" data-toggle="${a.id}" data-active="${a.active}">${a.active ? 'Pause' : 'Resume'}</button>
+            <button class="danger" data-delete="${a.id}">Delete</button></td>
+      </tr>`).join('') + `</table>`
+    : '<div class="empty-state">No automations yet — create one above.</div>';
+
+  el.querySelectorAll('[data-toggle]').forEach(btn => btn.addEventListener('click', async () => {
+    await api.patch(`/automations/${btn.dataset.toggle}`, { active: btn.dataset.active !== 'true' });
+    loadAutomations();
+  }));
+  el.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async () => {
+    if (confirm('Delete this automation?')) { await api.del(`/automations/${btn.dataset.delete}`); loadAutomations(); }
+  }));
+}
+
+(async () => {
+  await requireLogin();
+  await loadAccounts();
+  await loadAutomations();
+})();
+
+document.getElementById('newAutomation').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('err').textContent = '';
+  try {
+    await api.post('/automations', {
+      ig_account_id: document.getElementById('accountId').value,
+      name: document.getElementById('name').value,
+      trigger_type: document.getElementById('triggerType').value,
+      keywords: document.getElementById('keywords').value.split(',').map(s => s.trim()).filter(Boolean),
+      reply_public_comment: document.getElementById('replyPublic').value || null,
+      dm_message: document.getElementById('dmMessage').value,
+    });
+    e.target.reset();
+    loadAutomations();
+  } catch (err) {
+    document.getElementById('err').textContent = err.message;
+  }
+});
+
+document.getElementById('signOut').addEventListener('click', async () => {
+  await api.post('/auth/logout');
+  window.location.href = '/login.html';
+});
+</script>
+</body>
+</html>
