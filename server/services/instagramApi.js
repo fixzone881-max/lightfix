@@ -58,4 +58,11 @@ async function subscribeAccountWebhooks(igBusinessId, accessToken) {
   return data;
 }
 
-module.exports = { exchangeCodeForToken, getLongLivedToken, getMyProfile, sendDirectMessage, replyToComment, setCommentHidden, subscribeAccountWebhooks };
+async function getSubscribedApps(igBusinessId, accessToken) {
+  const { data } = await axios.get(`${GRAPH}/${igBusinessId}/subscribed_apps`, {
+    params: { access_token: accessToken },
+  });
+  return data;
+}
+
+module.exports = { exchangeCodeForToken, getLongLivedToken, getMyProfile, sendDirectMessage, replyToComment, setCommentHidden, subscribeAccountWebhooks, getSubscribedApps };
