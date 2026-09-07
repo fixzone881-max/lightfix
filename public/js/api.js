@@ -36,3 +36,28 @@ function fmtDate(iso) {
 function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+// --- Theme toggle (light/dark), shared across every page that loads this file ---
+(function initTheme() {
+  const stored = localStorage.getItem('signal-theme');
+  const theme = stored || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+
+  function addToggleButton() {
+    const btn = document.createElement('button');
+    btn.className = 'theme-toggle';
+    btn.type = 'button';
+    btn.title = 'Toggle light / dark theme';
+    btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '🌙' : '☀️';
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', current);
+      localStorage.setItem('signal-theme', current);
+      btn.textContent = current === 'light' ? '🌙' : '☀️';
+    });
+    document.body.appendChild(btn);
+  }
+
+  if (document.body) addToggleButton();
+  else document.addEventListener('DOMContentLoaded', addToggleButton);
+})();

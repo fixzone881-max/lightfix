@@ -67,6 +67,8 @@
   .flow-step h3 { color: var(--text); font-size: 15px; margin-bottom: 6px; }
   .flow-step p { font-size: 13.5px; margin: 0; }
 
+  .final-cta p { max-width: 480px; margin: 0 auto 10px; }
+
   .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
   .feature-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
@@ -82,6 +84,23 @@
   .final-cta .btn { margin-top: 10px; font-size: 15px; padding: 14px 28px; }
 
   footer { text-align: center; padding: 24px; color: var(--text-dim); font-size: 12.5px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 640px) {
+    .beta-banner { padding: 10px 16px; line-height: 1.4; }
+    .nav-top { padding: 16px 20px; flex-wrap: wrap; gap: 10px; }
+    .nav-top .ghost { margin-right: 10px; }
+    .hero { padding: 40px 18px 24px; }
+    .hero h1 { font-size: 30px; }
+    .hero p.sub { font-size: 15px; }
+    .hero .cta-row { flex-direction: column; align-items: stretch; }
+    .hero .cta-row .btn { width: 100%; text-align: center; }
+    .demo-shell { margin-top: 36px; padding: 16px; }
+    .section { padding: 40px 18px; }
+    .section h2 { font-size: 22px; }
+    .flow-step { max-width: 100%; }
+    .final-cta { padding: 48px 18px; }
+    .final-cta h2 { font-size: 22px; }
+  }
 </style>
 </head>
 <body>
@@ -171,6 +190,23 @@
 <footer>Signal · Built for creators · Beta program open now</footer>
 
 <script>
+(function initTheme() {
+  const stored = localStorage.getItem('signal-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', stored);
+  const btn = document.createElement('button');
+  btn.className = 'theme-toggle';
+  btn.type = 'button';
+  btn.title = 'Toggle light / dark theme';
+  btn.textContent = stored === 'light' ? '🌙' : '☀️';
+  btn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', current);
+    localStorage.setItem('signal-theme', current);
+    btn.textContent = current === 'light' ? '🌙' : '☀️';
+  });
+  document.body.appendChild(btn);
+})();
+
 (function loopDemo() {
   const comment = document.getElementById('demoComment');
   const typing = document.getElementById('demoTyping');

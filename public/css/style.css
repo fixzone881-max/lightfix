@@ -22,7 +22,25 @@
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 
+/* Light theme — same structure, swapped surfaces. Applied via data-theme="light" on <html>. */
+:root[data-theme="light"] {
+  --ink: #F5F5F2;
+  --surface: #FFFFFF;
+  --surface-raised: #F0EFEC;
+  --line: #E1DFDA;
+  --text: #1B1B1A;
+  --text-dim: #6B6B66;
+  --signal: #D9821F;      /* darker amber for contrast on white */
+  --signal-quiet: #F1D9B0;
+  --info: #4C57C4;
+  --good: #2E8A5F;
+  --bad: #C6453D;
+}
+
 * { box-sizing: border-box; }
+
+html { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
 
 body {
   margin: 0;
@@ -31,6 +49,29 @@ body {
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.5;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* Floating theme toggle, injected by api.js on every page that loads it */
+.theme-toggle {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 50;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
 }
 
 h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0 0 0.4em; }
@@ -155,3 +196,37 @@ th { color: var(--text-dim); font-weight: 500; font-size: 12px; text-transform: 
 
 .empty-state { color: var(--text-dim); padding: 40px 0; text-align: center; }
 .error-msg { color: var(--bad); font-size: 13px; margin-top: 10px; }
+
+/* --- Mobile / small screens --- */
+@media (max-width: 768px) {
+  .app-shell { flex-direction: column; min-height: auto; }
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 12px;
+    gap: 2px;
+  }
+  .sidebar .brand { margin-bottom: 0; padding: 0 10px 0 0; white-space: nowrap; }
+  .sidebar a { white-space: nowrap; }
+  .sidebar .spacer { display: none; }
+  .sidebar .signout { white-space: nowrap; padding: 9px 10px; }
+
+  .main { padding: 20px; max-width: 100%; }
+  .main header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .main header .btn { width: 100%; text-align: center; }
+
+  .stat-row { gap: 10px; }
+  .stat { min-width: 0; flex: 1 1 calc(50% - 10px); }
+
+  .panel { padding: 16px; }
+
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+
+  .auth-card { padding: 24px 20px; }
+
+  .theme-toggle { bottom: 12px; right: 12px; width: 38px; height: 38px; font-size: 16px; }
+}
