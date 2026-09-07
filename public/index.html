@@ -2,10 +2,196 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=/login.html">
-<title>Signal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal — Instagram automation for creators</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .nav-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 40px; max-width: 1100px; margin: 0 auto;
+  }
+  .nav-top .brand { font-family: var(--font-display); font-size: 20px; }
+  .nav-top a.btn { margin-top: 0; }
+  .nav-top .ghost { color: var(--text-dim); margin-right: 20px; font-size: 14px; }
+
+  .beta-banner {
+    background: linear-gradient(90deg, var(--signal-quiet), transparent);
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+    padding: 10px;
+    font-size: 13.5px;
+    color: var(--signal);
+  }
+
+  .hero {
+    max-width: 780px; margin: 0 auto; text-align: center;
+    padding: 70px 24px 40px;
+  }
+  .hero h1 { font-size: 44px; line-height: 1.15; margin-bottom: 16px; }
+  .hero h1 span { color: var(--signal); }
+  .hero p.sub { font-size: 17px; max-width: 540px; margin: 0 auto 32px; }
+  .hero .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .hero .cta-row .btn { margin-top: 0; font-size: 15px; padding: 13px 24px; }
+
+  .demo-shell {
+    max-width: 480px; margin: 56px auto 0;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+    padding: 20px; text-align: left;
+  }
+  .demo-shell .demo-label { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; letter-spacing: 0.03em; }
+  .demo-comment, .demo-dm {
+    border-radius: var(--radius-sm); padding: 10px 14px; font-size: 14px; margin-bottom: 10px;
+    max-width: 85%; opacity: 0; transform: translateY(6px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .demo-comment.show, .demo-dm.show { opacity: 1; transform: translateY(0); }
+  .demo-comment { background: var(--ink); border: 1px solid var(--line); }
+  .demo-dm { background: var(--signal); color: #1A1200; margin-left: auto; font-weight: 500; }
+  .demo-typing { display: inline-block; font-size: 13px; color: var(--text-dim); opacity: 0; transition: opacity 0.3s; }
+  .demo-typing.show { opacity: 1; }
+
+  .section { max-width: 1000px; margin: 0 auto; padding: 60px 24px; }
+  .section h2 { font-size: 26px; text-align: center; margin-bottom: 10px; }
+  .section p.lead { text-align: center; max-width: 520px; margin: 0 auto 40px; }
+
+  .flow-row { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .flow-step {
+    flex: 1; min-width: 200px; max-width: 240px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+    padding: 20px; text-align: center;
+  }
+  .flow-step .num {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--signal); color: #1A1200;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 12px;
+  }
+  .flow-step h3 { color: var(--text); font-size: 15px; margin-bottom: 6px; }
+  .flow-step p { font-size: 13.5px; margin: 0; }
+
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+    padding: 22px;
+  }
+  .feature-card h3 { font-size: 15.5px; margin-bottom: 8px; }
+  .feature-card p { font-size: 13.5px; margin: 0; }
+
+  .final-cta {
+    text-align: center; padding: 70px 24px; border-top: 1px solid var(--line);
+  }
+  .final-cta h2 { font-size: 28px; margin-bottom: 14px; }
+  .final-cta .btn { margin-top: 10px; font-size: 15px; padding: 14px 28px; }
+
+  footer { text-align: center; padding: 24px; color: var(--text-dim); font-size: 12.5px; border-top: 1px solid var(--line); }
+</style>
 </head>
 <body>
-<p>Redirecting to <a href="/login.html">login</a>…</p>
+
+<div class="beta-banner">🎉 Free during beta — no card required. Limited to the first 25 creators.</div>
+
+<div class="nav-top">
+  <div class="brand">Signal</div>
+  <div>
+    <a href="/login.html" class="ghost">Log in</a>
+    <a href="/signup.html" class="btn">Start free beta</a>
+  </div>
+</div>
+
+<section class="hero">
+  <h1>Turn Instagram comments into <span>DMs, deals, and sales</span> — automatically</h1>
+  <p class="sub">Signal watches your comments and DMs, replies instantly with the right message, filters out spam, flags brand deals, and delivers digital products — all without you lifting a finger.</p>
+  <div class="cta-row">
+    <a href="/signup.html" class="btn">Join the free beta</a>
+    <a href="#how-it-works" class="btn secondary">See how it works</a>
+  </div>
+
+  <div class="demo-shell">
+    <div class="demo-label">LIVE EXAMPLE — WATCH IT HAPPEN</div>
+    <div id="demoComment" class="demo-comment">💬 @traveler_maya: "link please!"</div>
+    <div id="demoTyping" class="demo-typing">Signal is sending a reply…</div>
+    <div id="demoDm" class="demo-dm">Hey! Here's the link you asked for 👇 signal.app/l/maya</div>
+  </div>
+</section>
+
+<section class="section" id="how-it-works">
+  <h2>How it works</h2>
+  <p class="lead">Set it up once. Signal handles every comment and DM after that.</p>
+  <div class="flow-row">
+    <div class="flow-step">
+      <div class="num">1</div>
+      <h3>Connect Instagram</h3>
+      <p>Link your Business or Creator account in under a minute.</p>
+    </div>
+    <div class="flow-step">
+      <div class="num">2</div>
+      <h3>Set a trigger</h3>
+      <p>Pick a keyword, like "link" or "price" — or match any comment at all.</p>
+    </div>
+    <div class="flow-step">
+      <div class="num">3</div>
+      <h3>Write the reply</h3>
+      <p>One DM template. Signal rewrites it slightly each time so it feels human.</p>
+    </div>
+    <div class="flow-step">
+      <div class="num">4</div>
+      <h3>It runs itself</h3>
+      <p>Every matching comment gets a reply, logged, and tracked automatically.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Everything a creator's inbox needs</h2>
+  <p class="lead">Not just auto-replies — a full front desk for your Instagram.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h3>💬 Comment → DM automation</h3>
+      <p>Turn any comment keyword into an instant, personalized direct message.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🛡️ AI comment moderation</h3>
+      <p>Spam, hate, and competitor mentions get hidden automatically — before you even see them.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🤝 Brand deal detection</h3>
+      <p>DMs mentioning a partnership or collab are flagged so they never get buried.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🛒 Digital product delivery</h3>
+      <p>Sell a guide, preset, or template — buyers get it delivered straight to their DMs.</p>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <h2>Free while we're in beta. No catch.</h2>
+  <p>Join now and help shape the product — your feedback goes straight into what we build next.</p>
+  <a href="/signup.html" class="btn">Start free beta</a>
+</section>
+
+<footer>Signal · Built for creators · Beta program open now</footer>
+
+<script>
+(function loopDemo() {
+  const comment = document.getElementById('demoComment');
+  const typing = document.getElementById('demoTyping');
+  const dm = document.getElementById('demoDm');
+
+  function reset() {
+    comment.classList.remove('show');
+    typing.classList.remove('show');
+    dm.classList.remove('show');
+  }
+
+  function play() {
+    reset();
+    setTimeout(() => comment.classList.add('show'), 200);
+    setTimeout(() => typing.classList.add('show'), 1200);
+    setTimeout(() => { typing.classList.remove('show'); dm.classList.add('show'); }, 2600);
+    setTimeout(play, 5500);
+  }
+  play();
+})();
+</script>
+
 </body>
 </html>
